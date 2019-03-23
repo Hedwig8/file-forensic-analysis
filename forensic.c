@@ -1,44 +1,86 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <unistd.h>
+#include <stdlib.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
 bool _r = false, _h_md5 = false, _h_sha256 = false, _h_sha1 = false, _v = false;
 int fd;
+extern char *optarg;
+extern int optopt;
 
 void closeFile() {
-    dup2(1, STDOUT_FILENO); //necessary?
     close(fd);
 }
 
-int argumentInterpreter(int argc, char *argv[]) {
+int argumentHandler(int argc, char *argv[]) {
     //if only executable file name called
-    if (argc < 2) {
-        write(STDERR_FILENO, "usage: forensic [-r] [-h [md5[,sha1[,sha256]]] [-o <outfile>] [-v] <file|dir>", 80);
+    if (argc < 2 || argc > 8) {
+        write(STDERR_FILENO, "\nusage: forensic [-r] [-h [md5[,sha1[,sha256]]] [-o <outfile>] [-v] <file|dir>\n\n", 82);
         return 1;
     }
-    for(int i = 1; i < argc; i++) {
-        if(argv[i] == "-r") {
-            _r = true;
-        }
-        else if (argv[i] == "-o") {
-            i++;
-            fd = open(argv[i]);
-            dup2(fd, STDOUT_FILENO);
-            atexit(closeFile);
-        }
-        else if (argv[i] == "-v") {
-            _v = true;
-        }
-        else if (argv[i] == "-h") { //question about usage
-            
-        }
-        else {
 
-        }
-    }
+    char option;
+    //iterating through the options
+    while ((option = getopt (argc, argv, "rh:vo:")) != -1)
+	{
+		switch (option)
+		{
+			// -r option 
+			case 'r':
+				_r = true;
+				break;
+
+			// -v option
+			case 'v':
+				_v = true;
+				break;
+
+			// -o option, with argument
+			case 'o':
+                if(optarg[0] == '-') {
+                    write(STDERR_FILENO, "Option '-o' requires argument of output file\n", 45);
+                    return 1;
+                }
+				fd = open(optarg, O_TRUNC | O_WRONLY);
+                dup2(fd, STDOUT_FILENO);
+                atexit(closeFile);
+				break;
+
+            // -h option, with argument
+            case 'h': 
+
+                //QUESTIONS
+
+                break;
+
+
+
+			// errors
+			case '?':
+				if (optopt == 'o'){ // forgotten argument
+					write(STDERR_FILENO, "Option '-%c' requires argument of output file\n", optopt);
+                    return 1;
+                }
+				else if (optopt == 'h') {
+                    //needs missing argument error?
+				    
+                }
+			    else {
+			        write(STDERR_FILENO, "Option '-%c' doesn't exist\n", optopt );
+                    write(STDERR_FILENO, "\nusage: forensic [-r] [-h [md5[,sha1[,sha256]]] [-o <outfile>] [-v] <file|dir>", 85);
+				    return 1;
+                }
+		}
+	}
+    return 0;
 }
 
 
 int main(int argc, char *argv[]) {
-    if (argumentInterpreter(argc, argv)) exit(1);
+    if (argumentHandler(argc, argv)) exit(1);
+
+    return 0;
 }
