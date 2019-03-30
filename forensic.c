@@ -135,23 +135,47 @@ int main(int argc, char *argv[]) {
         struct stat file_stat;
         struct timespec birth;
         lstat(filename, &file_stat);
-        birth = file_stat.st_birthtimespec;
+        //birth = file_stat.st_birthtimespec;
 
         //filename
         write(STDOUT_FILENO, filename, sizeof filename);
         write(STDOUT_FILENO, ",", 1);
 
         //writes file_type with exec file filename
-        write(STDOUT_FILENO, ",", 1);
-        
+        /*
+        if (S_ISBLK(file_stat.st_mode)) {write(STDOUT_FILENO, "block special file,",19);}
+        else if (S_ISCHR(file_stat.st_mode)) {write(STDOUT_FILENO, "character special file,",23);}
+        else if (S_ISDIR(file_stat.st_mode)) {write(STDOUT_FILENO, "directory,",9);}
+        else if (S_ISFIFO(file_stat.st_mode)) {write(STDOUT_FILENO,"pipe or FIFO special file,",26);}
+        else if (S_ISREG(file_stat.st_mode)) {write(STDOUT_FILENO, "regular file,",13);}
+        else if (S_ISLNK(file_stat.st_mode)) {write(STDOUT_FILENO, "symbolic link,",14);}
+        else {write(STDOUT_FILENO, "undefined,",10);}
+        */
+        if (fork() > 0) {
+            wait(NULL);
+            write(STDOUT_FILENO, ",", 1);
+        }
+        else {
+            const char *cmd = "file";
+            char *const argv[] = {filename};
+            execlp(cmd, cmd, filename, NULL);
+            write(STDOUT_FILENO, ",", 1);
+        }
+
         //file size
         sprintf(str, "%ld", file_stat.st_size);
         write(STDOUT_FILENO, str, strlen(str));
         write(STDOUT_FILENO, ",", 1);
 
         //file access
+        if (S_IRUSR & file_stat.st_uid) 
+            write(STDOUT_FILENO, "r", 1);
+        if (S_IWUSR & file_stat.st_uid)
+            write(STDOUT_FILENO, "w", 1);
+        if (S_IXUSR & file_stat.st_uid)
+            write(STDOUT_FILENO, "e", 1);
         write(STDOUT_FILENO, ",", 1);
-
+    
         //file created time
         timeConverter(file_stat.st_ctime, str);
         write(STDOUT_FILENO, str, sizeof str);
