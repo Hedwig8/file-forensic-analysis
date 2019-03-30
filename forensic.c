@@ -187,6 +187,42 @@ int main(int argc, char *argv[]) {
         write(STDOUT_FILENO, "\n", 1);
 
         //md5, sha1, sha256, with execs
+        if (_h_md5) {
+            if (fork() > 0) {
+                wait(NULL);
+                write(STDOUT_FILENO, ",", 1);
+            }
+            else {
+                const char *cmd = "md5sum";
+                char *const argv[] = {filename};
+                execlp(cmd, cmd, filename, NULL);
+                write(STDOUT_FILENO, ",", 1);
+            }
+        }
+        if (_h_sha1) {
+            if (fork() > 0) {
+                wait(NULL);
+                write(STDOUT_FILENO, ",", 1);
+            }
+            else {
+                const char *cmd = "sha1sum";
+                char *const argv[] = {filename};
+                execlp(cmd, cmd, filename, NULL);
+                write(STDOUT_FILENO, ",", 1);
+            }
+        }
+        if (_h_sha256) {
+            if (fork() > 0) {
+                wait(NULL);
+                write(STDOUT_FILENO, ",", 1);
+            }
+            else {
+                const char *cmd = "sha256sum";
+                char *const argv[] = {filename};
+                execlp(cmd, cmd, filename, NULL);
+                write(STDOUT_FILENO, ",", 1);
+            }   
+        }
     }
 
     // to be printed
