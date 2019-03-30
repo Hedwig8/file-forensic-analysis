@@ -29,25 +29,19 @@ void timeConverter(time_t sec, char str[]) {
     strftime(str, sizeof("dd-mm-yyyyThh:mm:ss"), "%FT%H:%M:%S", &time);
 }
 
+int forkPipeExec(char* out_str, char* cmd, char* filename) {
 
+
+}
 
 int main(int argc, char *argv[]) {
     if (argumentHandler(argc, argv)) //0 if OK
         exit(1);
 
-    // opens 
-    //char path[100];
-    //strcpy(path, getenv("PWD"));
-    //strcat(path, "/");
-    //strcat(path, argv[optind]);
-    //printf("%s %d %d\n", path, isDirectory(argv[optind]), isDirectory(path));
-
-    //DIR *dir1 = opendir(argv[optind]);
-    //DIR *dir2 = opendir(path);
-
-    //printf("\n%p %p", dir1, dir2);
     char *filename = argv[optind];
 
+
+    // --------------------- TO BE MOVED TO SPECIFIC FUNCTION
     if(isDirectory(filename)) {
         //DIR *dir = opendir(argv[optind]);
         printf("1");
@@ -74,6 +68,10 @@ int main(int argc, char *argv[]) {
         else if (S_ISLNK(file_stat.st_mode)) {write(STDOUT_FILENO, "symbolic link,",14);}
         else {write(STDOUT_FILENO, "undefined,",10);}
         */
+
+
+
+       // -------------------- TO BE MOVED/SUBST FOR FUNCTION
         if (fork() > 0) {
             wait(NULL);
             write(STDOUT_FILENO, ",", 1);
@@ -106,6 +104,8 @@ int main(int argc, char *argv[]) {
         write(STDOUT_FILENO, str, sizeof str);
         write(STDOUT_FILENO, "\n", 1);
 
+
+        // -------------------- TO BE MOVED/SUBST FOR FUNCTION
         //md5, sha1, sha256, with execs
         if (_h_md5) {
             if (fork() > 0) {
