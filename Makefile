@@ -7,12 +7,18 @@
 # define some Makefile variables for the compiler and compiler flags
 # to use Makefile variables later in the Makefile: $()
 #
+#
+#
+#  JUSR RUN 'make' IN TERMINAL/CONSOLE AND THIS WILL BE COMPILED
+#
+#
+#
+#
 #  -g    adds debugging information to the executable file
 #  -Wall turns on most, but not all, compiler warnings
 #
-# for C++ define  CC = g++
 CC = gcc
-CFLAGS  = -g -Wall
+CFLAGS  = -g -Wall -Wextra -Werror
 
 # typing 'make' will invoke the first target entry in the file 
 # (in this case the default target entry)
