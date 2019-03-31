@@ -40,10 +40,12 @@ int argumentHandler(int argc, char *argv[]) {
 
 			// -o option, with argument
 			case 'o':
+                //checks if the argument is an option
                 if(optarg[0] == '-') {
                     write(STDERR_FILENO, "Option '-o' requires argument of output file\n", 45);
                     return 1;
                 }
+
 				if((fd = open(optarg, O_TRUNC | O_WRONLY)) == -1) {
                     write(STDERR_FILENO, "\nThe output file doesn't exist\n\n", 32);
                     return 1;
@@ -54,12 +56,18 @@ int argumentHandler(int argc, char *argv[]) {
 
             // -h option, with argument
             case 'h': 
+                // checks if the argument is an option
+                if(optarg[0] == '-') {
+                    write(STDERR_FILENO, "Option '-h' requires argument of output file\n", 45);
+                    return 1;
+                }
 
-                //QUESTIONS
+                // checks if the argument has any of the occurences
+                if(strstr(optarg, "md5sum") != NULL) _h_md5 = true;
+                if(strstr(optarg, "sha1") != NULL) _h_sha1 = true;
+                if(strstr(optarg, "sha256") != NULL) _h_sha256 = true;
 
                 break;
-
-
 
 			// errors
 			case '?':
@@ -67,9 +75,9 @@ int argumentHandler(int argc, char *argv[]) {
 					write(STDERR_FILENO, "Option '-o' requires argument of output file\n", 45);
                     return 1;
                 }
-				else if (optopt == 'h') {
-                    //needs missing argument error?
-				    
+				else if (optopt == 'h') { //forgotten argument
+                    write(STDERR_FILENO, "Option '-h' requires argument of hash calculations\n", 51);
+				    return 1;
                 }
 			    else {
 			        write(STDERR_FILENO, "That option doesn't exist\n", 26);

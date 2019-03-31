@@ -5,11 +5,10 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <stdbool.h>
+#include <string.h>
 
 #ifndef _ARGUMENTHANDLER_H_
 #define _ARGUMENTHANDLER_H_
-#define READ 0
-#define WRITE 1
 
 
 
