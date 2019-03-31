@@ -71,10 +71,8 @@ int forkPipeExec(char outputStr[], const char *cmd, const char *filename)
     }
 
     strcpy(outputStr, strtok(outputStr, "\n"));
-/*
-    if(outputAux[strlen(outputAux) -1] == '\n') 
-        snprintf(outputStr, strlen(outputAux)-1, "%s", outputAux);
-    else  snprintf(outputStr, strlen(outputAux), "%s", outputAux);*/
+
+
 /*
     if (pid > 0)
     {
@@ -126,14 +124,14 @@ int fileAnalysis(const char *filename)
     char execStr[255];
     
     struct stat file_stat;
-    lstat(filename, &file_stat);
+    if(lstat(filename, &file_stat) == -1) return 1;
 
     //filename
     write(STDOUT_FILENO, filename, sizeof filename);
     write(STDOUT_FILENO, ",", 1);
 
     //file type
-    forkPipeExec(execStr, "file", filename);
+    if(forkPipeExec(execStr, "file", filename)) return 1;
     write(STDOUT_FILENO, execStr, strlen(execStr));
     write(STDOUT_FILENO, ",", 1);
 
@@ -142,7 +140,7 @@ int fileAnalysis(const char *filename)
     write(STDOUT_FILENO, sizeStr, strlen(sizeStr));
     write(STDOUT_FILENO, ",", 1);
 
-    //file access
+    //file access permissions
     if (S_IRUSR & file_stat.st_mode)
         write(STDOUT_FILENO, "r", 1);
     if (S_IWUSR & file_stat.st_mode)
@@ -160,37 +158,37 @@ int fileAnalysis(const char *filename)
     timeConverter(file_stat.st_mtime, timeStr);
     write(STDOUT_FILENO, timeStr, sizeof timeStr);
 
-
-/*
-    if (_h_md5 || _h_sha1 || _h_sha256)
-    {
-        write(STDOUT_FILENO, ",", 1);
-    }*/
-
     // digital impressions 
     if (_h_md5)
     {
         char md5Str[32];
+        if(forkPipeExec(md5Str, "md5sum", filename)) return 1;
         write(STDOUT_FILENO, ",", 1);
-        forkPipeExec(md5Str, "md5sum", filename);
         write(STDOUT_FILENO, md5Str, sizeof md5Str);
     }
     if (_h_sha1)
     {
         char sha1Str[40];
+        if(forkPipeExec(sha1Str, "sha1sum", filename)) return 1;
         write(STDOUT_FILENO, ",", 1);
-        forkPipeExec(sha1Str, "sha1sum", filename);
         write(STDOUT_FILENO, sha1Str, sizeof sha1Str);
     }
     if (_h_sha256)
     {
         char sha256Str[64];
+        if(forkPipeExec(sha256Str, "sha256sum", filename)) return 1;
         write(STDOUT_FILENO, ",", 1);
-        forkPipeExec(sha256Str, "sha256sum", filename);
         write(STDOUT_FILENO, sha256Str, sizeof sha256Str);
     }
 
     write(STDOUT_FILENO, "\n", 1);
+
+    return 0;
+}
+
+int dirAnalysis(const char* dirname) {
+
+    //iterate through all files of a directory and prints info of it
 
     return 0;
 }
@@ -200,22 +198,16 @@ int main(int argc, char *argv[])
     if (argumentHandler(argc, argv)) //0 if OK
         exit(1);
 
-    char *filename = argv[optind];
+    char *name = argv[optind];
 
-    // --------------------- TO BE MOVED TO SPECIFIC FUNCTION
-    if (isDirectory(filename))
+    if (isDirectory(name))
     {
-        //DIR *dir = opendir(argv[optind]);
-        printf("1");
-        write(STDOUT_FILENO, filename, strlen(filename));
+        if(dirAnalysis(name)) return 1;
     }
     else
     {
-        fileAnalysis(filename);
+        if(fileAnalysis(name)) return 1;
     }
-
-    // to be printed
-    // file_name,file_type,file_size,file_access,file_created_date,file_modification_date,md5,sha1,sha256
 
     return 0;
 }
