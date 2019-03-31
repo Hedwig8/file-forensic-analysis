@@ -29,9 +29,46 @@ void timeConverter(time_t sec, char str[]) {
     strftime(str, sizeof("dd-mm-yyyyThh:mm:ss"), "%FT%H:%M:%S", &time);
 }
 
-int forkPipeExec(char* out_str, char* cmd, char* filename) {
+int forkPipeExec(char* cmd, char* filename) {
+        int fd[2];
+        pipe(fd);
+        int v;
 
+        v = fork();
 
+        if (v > 0) {
+            close(fd[WRITE]);
+            char red;
+
+            if (cmd[0] == 'f') {
+
+            do {
+            read(fd[READ], &red,sizeof(char));
+            } while (red != ':');
+
+            do {
+                read(fd[READ], &red,sizeof(char));
+                if (red != '\n')
+                    write(STDOUT_FILENO, &red, 1); 
+            } while (red != '\n');
+
+            }
+            else {
+                do {
+                    read(fd[READ], &red,sizeof(char));
+                    if (red != ' ')
+                        write(STDOUT_FILENO, &red, 1);
+                } while (red != ' ');
+            }
+        }
+        else if (v == 0){
+            dup2(fd[WRITE], STDOUT_FILENO);
+            execlp(cmd, cmd, filename, NULL);
+        }
+        else {
+            perror("Fork failed!");
+        }
+        return 0;
 }
 
 int main(int argc, char *argv[]) {
@@ -59,27 +96,55 @@ int main(int argc, char *argv[]) {
         write(STDOUT_FILENO, ",", 1);
 
         //writes file_type with exec file filename
-        /*
-        if (S_ISBLK(file_stat.st_mode)) {write(STDOUT_FILENO, "block special file,",19);}
-        else if (S_ISCHR(file_stat.st_mode)) {write(STDOUT_FILENO, "character special file,",23);}
-        else if (S_ISDIR(file_stat.st_mode)) {write(STDOUT_FILENO, "directory,",9);}
-        else if (S_ISFIFO(file_stat.st_mode)) {write(STDOUT_FILENO,"pipe or FIFO special file,",26);}
-        else if (S_ISREG(file_stat.st_mode)) {write(STDOUT_FILENO, "regular file,",13);}
-        else if (S_ISLNK(file_stat.st_mode)) {write(STDOUT_FILENO, "symbolic link,",14);}
+        /*const char *cmd = "file";
+        ifconst char *cmd = "file"; {write(STDOUT_FILENO, "block special file,",19);}
+        elconst char *cmd = "file";ode)) {write(STDOUT_FILENO, "character special file,",23);}
+        elconst char *cmd = "file";ode)) {write(STDOUT_FILENO, "directory,",9);}
+        elconst char *cmd = "file";mode)) {write(STDOUT_FILENO,"pipe or FIFO special file,",26);}
+        elconst char *cmd = "file";ode)) {write(STDOUT_FILENO, "regular file,",13);}
+        elconst char *cmd = "file";ode)) {write(STDOUT_FILENO, "symbolic link,",14);}
         else {write(STDOUT_FILENO, "undefined,",10);}
         */
 
 
 
        // -------------------- TO BE MOVED/SUBST FOR FUNCTION
-        if (fork() > 0) {
-            wait(NULL);
+       /*
+        int fd[2];
+        pipe(fd);
+        int v;
+
+        v = fork();
+
+        if (v > 0) {
+            close(fd[WRITE]);
+            char red;
+
+            do {
+            read(fd[READ], &red,sizeof(char));
+            } while (red != ':');
+
+            do {
+                read(fd[READ], &red,sizeof(char));
+                if (red != '\n')
+                    write(STDOUT_FILENO, &red, 1); 
+            } while (red != '\n');
+
             write(STDOUT_FILENO, ",", 1);
         }
-        else {
+        else if (v == 0){
+            dup2(fd[WRITE], STDOUT_FILENO);
             const char *cmd = "file";
             execlp(cmd, cmd, filename, NULL);
         }
+        else {
+            perror("Fork failed!");
+        }
+        */
+
+        //file type
+        forkPipeExec("file",filename);
+        write(STDOUT_FILENO, ",", 1);
 
         //file size
         sprintf(str, "%ld", file_stat.st_size);
@@ -102,41 +167,28 @@ int main(int argc, char *argv[]) {
         //file modification time
         //timeConverter(birth.tv_sec, str);
         write(STDOUT_FILENO, str, sizeof str);
-        write(STDOUT_FILENO, "\n", 1);
+        if (_h_md5|_h_sha1|_h_sha256) {
+            write(STDOUT_FILENO, ",", 1); 
+        }
 
 
         // -------------------- TO BE MOVED/SUBST FOR FUNCTION
         //md5, sha1, sha256, with execs
         if (_h_md5) {
-            if (fork() > 0) {
-                wait(NULL);
-                write(STDOUT_FILENO, ",", 1);
-            }
-            else {
-                const char *cmd = "md5sum";
-                execlp(cmd, cmd, filename, NULL);
-            }
+            forkPipeExec("md5sum",filename);
+            if (_h_sha1 | _h_sha256)
+                write(STDOUT_FILENO, ",", 1);   
         }
         if (_h_sha1) {
-            if (fork() > 0) {
-                wait(NULL);
+            forkPipeExec("sha1sum",filename);
+            if (_h_sha256)
                 write(STDOUT_FILENO, ",", 1);
-            }
-            else {
-                const char *cmd = "sha1sum";
-                execlp(cmd, cmd, filename, NULL);
-            }
         }
         if (_h_sha256) {
-            if (fork() > 0) {
-                wait(NULL);
-                write(STDOUT_FILENO, ",", 1);
-            }
-            else {
-                const char *cmd = "sha256sum";
-                execlp(cmd, cmd, filename, NULL);
-            }   
+            forkPipeExec("sha256sum",filename);  
         }
+
+        write(STDOUT_FILENO, "\n", 1);
     }
 
     // to be printed

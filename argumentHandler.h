@@ -8,6 +8,9 @@
 
 #ifndef _ARGUMENTHANDLER_H_
 #define _ARGUMENTHANDLER_H_
+#define READ 0
+#define WRITE 1
+
 
 
 extern bool _r, _h_md5, _h_sha256, _h_sha1, _v;
