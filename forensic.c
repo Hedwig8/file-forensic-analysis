@@ -127,7 +127,7 @@ int fileAnalysis(const char *filename)
     if(lstat(filename, &file_stat) == -1) return 1;
 
     //filename
-    write(STDOUT_FILENO, filename, sizeof filename);
+    write(STDOUT_FILENO, filename, strlen(filename));
     write(STDOUT_FILENO, ",", 1);
 
     //file type
@@ -188,7 +188,13 @@ int fileAnalysis(const char *filename)
 
 int dirAnalysis(const char* dirname) {
 
-    //iterate through all files of a directory and prints info of it
+    struct dirent *dirFile;
+    DIR *dir = opendir(dirname);
+
+    while((dirFile = readdir(dir)) != NULL) {
+        if(isDirectory(dirFile->d_name)) continue;
+        fileAnalysis(dirFile->d_name);
+    }
 
     return 0;
 }
