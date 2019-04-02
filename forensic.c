@@ -1,13 +1,5 @@
-#include <stdio.h>
-#include <dirent.h>
-#include <time.h>
-#include <sys/wait.h>
-
 #include "argumentHandler.h"
-
-#define READ 0
-#define WRITE 1
-
+#include "forensic.h"
 
 int isDirectory(const char *name)
 {
@@ -15,6 +7,12 @@ int isDirectory(const char *name)
     if (lstat(name, &dir))
     {
         return 0;
+    }
+    if (S_ISDIR(dir.st_mode)) {
+        printf("\n TRUE \n\n");
+    }
+    else {
+        printf("\n FALSE \n\n");
     }
     return S_ISDIR(dir.st_mode);
 }
@@ -71,49 +69,7 @@ int forkPipeExec(char outputStr[], const char *cmd, const char *filename)
     }
 
     strcpy(outputStr, strtok(outputStr, "\n"));
-
-
-/*
-    if (pid > 0)
-    {
-        close(fd[WRITE]);
-        char readChar;
-
-        if (cmd[0] == 'f')
-        {
-
-            do
-            {
-                read(fd[READ], &readChar, sizeof(char));
-            } while (readChar != ':');
-
-            do
-            {
-                read(fd[READ], &readChar, sizeof(char));
-                if (readChar != '\n')
-                    write(STDOUT_FILENO, &readChar, 1);
-            } while (readChar != '\n');
-        }
-        else
-        {
-            do
-            {
-                read(fd[READ], &readChar, sizeof(char));
-                if (readChar != ' ')
-                    write(STDOUT_FILENO, &readChar, 1);
-            } while (readChar != ' ');
-        }
-    }
-    else if (pid == 0)
-    {
-        dup2(fd[WRITE], STDOUT_FILENO);
-        execlp(cmd, cmd, filename, NULL);
-    }
-    else
-    {
-        perror("Fork failed!");
-        return 1;
-    }*/
+    
     return 0;
 }
 
@@ -186,33 +142,50 @@ int fileAnalysis(const char *filename)
     return 0;
 }
 
+int forkdir (const char* dirname) 
+{
+    pid_t pid = fork();
+
+    if (pid > 0) {
+        wait(NULL);
+        return 0;
+    } 
+    else if (pid == 0) {
+        dirAnalysis(dirname);
+        exit(1);
+    }
+    else {
+        perror("Fork error");
+        return 1;
+    }
+}
+
 int dirAnalysis(const char* dirname) {
 
     struct dirent *dirFile;
     DIR *dir = opendir(dirname);
 
     while((dirFile = readdir(dir)) != NULL) {
-        if(isDirectory(dirFile->d_name)) continue;
-        fileAnalysis(dirFile->d_name);
-    }
+        char auxFile[150];
+        strcpy(auxFile,dirname);
+        strcat(auxFile,"/");
+        strcat(auxFile,dirFile->d_name);
 
-    return 0;
-}
-
-int main(int argc, char *argv[])
-{
-    if (argumentHandler(argc, argv)) //0 if OK
-        exit(1);
-
-    char *name = argv[optind];
-
-    if (isDirectory(name))
-    {
-        if(dirAnalysis(name)) return 1;
-    }
-    else
-    {
-        if(fileAnalysis(name)) return 1;
+        if(isDirectory(dirFile->d_name)) 
+        {
+            write(STDOUT_FILENO, "is paste\n",10);
+            if (_r) {
+               
+                if (strstr(auxFile,".") == NULL) {
+                    
+                    if(forkdir(auxFile)) return 1;
+                }
+            }
+        }
+        else {
+            write(STDOUT_FILENO, "!is paste\n",11);
+        }
+        fileAnalysis(auxFile);
     }
 
     return 0;
