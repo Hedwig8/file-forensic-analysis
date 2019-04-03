@@ -34,6 +34,7 @@ int forkPipeExec(char outputStr[], const char *cmd, const char *filename)
 
     //if parent
     if (pid > 0) {
+        wait(NULL);
         close(pipeFd[WRITE]);
         // catch child's output
         read(pipeFd[READ], readStr, sizeof readStr);    
@@ -174,6 +175,7 @@ int dirAnalysis(const char* dirname) {
                     if(forkdir(auxFile)) return 1;
                 }
             }
+            continue;
         }
         fileAnalysis(auxFile);
     }
