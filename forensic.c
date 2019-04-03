@@ -10,7 +10,7 @@ int dirNumber = 0;
 void sigint_handler (int signo) {
     int cenas = signo;
     cenas = cenas+ cenas;
-    printf("\n\naconteceu\n\n");
+    printf("\n\nYou clicked on CNTRL+C\n\n");
     sigint = true;
 }
 

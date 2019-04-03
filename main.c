@@ -2,17 +2,15 @@
 #include "argumentHandler.h"
 #include "forensic.h"
 
-int main(int argc, char *argv[])
-{
-    time0 = clock();
+int SIGINSTALL(){
 
     struct sigaction sigint;
     sigint.sa_handler = sigint_handler;
  
     if (sigaction(SIGINT,&sigint,NULL) < 0)
     {
-        fprintf(stderr,"Unable to install SIGINT handler-\n");
-        exit(1);
+        write(STDERR_FILENO,"Unable to install SIGINT handler\n",32);
+        return 1;
     }
 
     struct sigaction siguser1;
@@ -20,8 +18,8 @@ int main(int argc, char *argv[])
  
     if (sigaction(SIGUSR1,&siguser1,NULL) < 0)
     {
-        fprintf(stderr,"Unable to install SIGUSR1 handler-\n");
-        exit(1);
+        write(STDERR_FILENO,"Unable to install SIGUSR1 handler\n",34);
+        return 1;
     }
 
     struct sigaction siguser2;
@@ -29,10 +27,20 @@ int main(int argc, char *argv[])
  
     if (sigaction(SIGUSR2,&siguser2,NULL) < 0)
     {
-        fprintf(stderr,"Unable to install SIGUSR2 handler-\n");
-        exit(1);
+        write(STDERR_FILENO,"Unable to install SIGUSR2 handler\n",34);
+        return 1;
     }
 
+    return 0;
+
+
+}
+
+int main(int argc, char *argv[])
+{
+    time0 = clock();
+
+    if(SIGINSTALL()) exit(1);
 
     if (argumentHandler(argc, argv)) //0 if OK
         exit(1);
