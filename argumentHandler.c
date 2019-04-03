@@ -5,7 +5,7 @@ bool _r = false, _h_md5 = false, _h_sha256 = false, _h_sha1 = false, _v = false;
 
 //output file descritor
 int fd;
-int log;
+int logFd;
 
 // getopt function possible arguments
 extern char *optarg;
@@ -16,8 +16,8 @@ void closeFileFd() {
     close(fd);
 }
 
-void closeFileLog() {
-    close(log);
+void closeLogFile() {
+    close(logFd);
 }
 
 int argumentHandler(int argc, char *argv[]) {
@@ -44,17 +44,17 @@ int argumentHandler(int argc, char *argv[]) {
                 char* logFile = getenv("LOGFILENAME");
                 if (logFile == NULL)
                 {
-                    write(STDERR_FILENO,"Environment var missing!\n",25);
-                    reutrn (1);
+                    write(STDERR_FILENO,"\nEnvironment var doesn't exist\n\n",33);
+                    return 1;
                 }
                 else {
-                    if ((log = open(logFile,O_APPEND | O_WRONLY)) == -1) 
+                    if ((logFd = open(logFile,O_APPEND | O_WRONLY)) == -1) 
                     {
-                        write(STDERR_FILENO, "Failed to open logFile!\n",25);
+                        write(STDERR_FILENO, "\nThe log file doesn't exist\n\n",29);
                         return 1;
                     }
                     else 
-                        atexit(closeFileLog);
+                        atexit(closeLogFile);
                 }
 				break;
 
@@ -83,7 +83,7 @@ int argumentHandler(int argc, char *argv[]) {
                 }
 
                 // checks if the argument has any of the occurences
-                if(strstr(optarg, "md5sum") != NULL) _h_md5 = true;
+                if(strstr(optarg, "md5") != NULL) _h_md5 = true;
                 if(strstr(optarg, "sha1") != NULL) _h_sha1 = true;
                 if(strstr(optarg, "sha256") != NULL) _h_sha256 = true;
 

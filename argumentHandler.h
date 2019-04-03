@@ -12,9 +12,11 @@
 
 extern bool _r, _h_md5, _h_sha256, _h_sha1, _v;
 extern int optind;
-extern int log;
+extern int logFd;
 
 void closeFile();
+
+void closeLogFile();
 
 int argumentHandler(int argc, char *argv[]);
 

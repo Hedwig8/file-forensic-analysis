@@ -23,4 +23,6 @@ int forkdir (const char* dirname);
 
 int dirAnalysis(const char* dirname);
 
+void reportLog(const char* report);
+
 #endif
