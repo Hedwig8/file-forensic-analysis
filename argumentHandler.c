@@ -5,14 +5,19 @@ bool _r = false, _h_md5 = false, _h_sha256 = false, _h_sha1 = false, _v = false;
 
 //output file descritor
 int fd;
+int log;
 
 // getopt function possible arguments
 extern char *optarg;
 extern int optopt, optind;
 
 
-void closeFile() {
+void closeFileFd() {
     close(fd);
+}
+
+void closeFileLog() {
+    close(log);
 }
 
 int argumentHandler(int argc, char *argv[]) {
@@ -36,6 +41,21 @@ int argumentHandler(int argc, char *argv[]) {
 			// -v option
 			case 'v':
 				_v = true;
+                char* logFile = getenv("LOGFILENAME");
+                if (logFile == NULL)
+                {
+                    write(STDERR_FILENO,"Environment var missing!\n",25);
+                    reutrn (1);
+                }
+                else {
+                    if ((log = open(logFile,O_APPEND | O_WRONLY)) == -1) 
+                    {
+                        write(STDERR_FILENO, "Failed to open logFile!\n",25);
+                        return 1;
+                    }
+                    else 
+                        atexit(closeFileLog);
+                }
 				break;
 
 			// -o option, with argument
@@ -51,7 +71,7 @@ int argumentHandler(int argc, char *argv[]) {
                     return 1;
                 }
                 dup2(fd, STDOUT_FILENO);
-                atexit(closeFile);
+                atexit(closeFileFd);
 				break;
 
             // -h option, with argument

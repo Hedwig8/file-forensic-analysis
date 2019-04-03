@@ -9,6 +9,8 @@
 #define READ 0
 #define WRITE 1
 
+extern clock_t time0;
+
 int isDirectory(const char *name);
 
 void timeConverter(time_t sec, char str[]);

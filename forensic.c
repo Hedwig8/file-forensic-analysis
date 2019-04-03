@@ -1,5 +1,8 @@
+#include <time.h>
 #include "argumentHandler.h"
 #include "forensic.h"
+
+clock_t time0;
 
 int isDirectory(const char *name)
 {
@@ -13,7 +16,6 @@ int isDirectory(const char *name)
 
 void timeConverter(time_t sec, char str[])
 {
-
     struct tm time;
     localtime_r(&sec, &time);
     strftime(str, sizeof("dd-mm-yyyyThh:mm:ss"), "%FT%H:%M:%S", &time);
@@ -101,12 +103,12 @@ int fileAnalysis(const char *filename)
     write(STDOUT_FILENO, ",", 1);
 
     //file created time
-    timeConverter(file_stat.st_ctime, timeStr);
+    timeConverter(file_stat.st_mtime, timeStr);
     write(STDOUT_FILENO, timeStr, sizeof timeStr);
     write(STDOUT_FILENO, ",", 1);
 
     //file modification time
-    timeConverter(file_stat.st_mtime, timeStr);
+    timeConverter(file_stat.st_atime, timeStr);
     write(STDOUT_FILENO, timeStr, sizeof timeStr);
 
     // digital impressions 
@@ -169,7 +171,6 @@ int dirAnalysis(const char* dirname) {
         if(isDirectory(auxFile)) 
         {
             if (_r) {
-               
                 if (strstr(auxFile,".") == NULL) {
                     
                     if(forkdir(auxFile)) return 1;
@@ -177,8 +178,41 @@ int dirAnalysis(const char* dirname) {
             }
             continue;
         }
+
         fileAnalysis(auxFile);
+
+        if (_v) {
+            char strreport[200];
+            strcpy(strreport, "ANALIZED ");
+            strcat(strreport, auxFile);
+            reportLog(strreport);
+        }
     }
 
     return 0;
+}
+
+int reportLog(const char* report) {
+    // time calculation
+    clock_t time = clock();
+    double time_taken = ((double) time-time0) / CLOCKS_PER_SEC;
+    char logtime[6], strpid[6];
+ 
+    // cast from double to c-str
+    sprintf(logtime, "%f", time_taken);
+
+    // write time in file
+    write(log, logtime, strlen(logtime));
+    write(log, " - ", 3);
+
+    //  cast pid to c-str
+    sprintf(strpid, "%d", getpid());
+
+    // write pid in file
+    write(log, strpid, strlen(strpid));
+    write(log, " - ", 3);
+
+    // write report in file
+    write(log,report,strlen(report));
+    write(log, '\n', 1);
 }

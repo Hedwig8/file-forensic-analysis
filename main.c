@@ -1,8 +1,11 @@
+#include <time.h>
 #include "argumentHandler.h"
 #include "forensic.h"
 
 int main(int argc, char *argv[])
 {
+    time0 = clock();
+
     if (argumentHandler(argc, argv)) //0 if OK
         exit(1);
 
