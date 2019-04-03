@@ -48,13 +48,13 @@ int argumentHandler(int argc, char *argv[]) {
                     return 1;
                 }
                 else {
-                    if ((logFd = open(logFile,O_APPEND | O_WRONLY)) == -1) 
+
+                    if ((logFd = open(logFile,O_TRUNC | O_WRONLY)) == -1) 
                     {
                         write(STDERR_FILENO, "\nThe log file doesn't exist\n\n",29);
                         return 1;
                     }
-                    else 
-                        atexit(closeLogFile);
+                    atexit(closeLogFile);
                 }
 				break;
 

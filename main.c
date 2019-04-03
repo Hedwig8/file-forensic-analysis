@@ -1,8 +1,9 @@
 #include <time.h>
+#include <stdlib.h>
 #include "argumentHandler.h"
 #include "forensic.h"
 
-int SIGINSTALL(){
+int signalsInstall(){
 
     struct sigaction sigint;
     sigint.sa_handler = sigint_handler;
@@ -39,8 +40,9 @@ int SIGINSTALL(){
 int main(int argc, char *argv[])
 {
     time0 = clock();
+    //time(&time0);
 
-    if(SIGINSTALL()) exit(1);
+    if(signalsInstall()) exit(1);
 
     if (argumentHandler(argc, argv)) //0 if OK
         exit(1);
@@ -55,6 +57,23 @@ int main(int argc, char *argv[])
     {
         if(fileAnalysis(name)) return 1;
     }
+
+    //clock_t time1 = clock();
+    //clock_t time1;
+    //time0 = clock() - time0;
+    //time(&time1);
+    //char strTimeMessage[50], strtime[10];
+    //double total_time = ((double) time1-time0) / CLOCKS_PER_SEC;
+    //double total_time = difftime(time1, time0);
+    //sprintf(strtime,"%d", total_time);
+
+    //strcpy(strTimeMessage, "\nThe execution took ");
+    //strcat(strTimeMessage, strtime);
+    //strcat(strTimeMessage, " ms to execute\n\n");
+
+
+    //write(STDERR_FILENO, strTimeMessage, strlen(strTimeMessage));
+    //printf("%f", (double) time0/CLOCKS_PER_SEC);
 
     return 0;
 }
