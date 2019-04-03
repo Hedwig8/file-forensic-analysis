@@ -10,8 +10,6 @@
 #ifndef _ARGUMENTHANDLER_H_
 #define _ARGUMENTHANDLER_H_
 
-
-
 extern bool _r, _h_md5, _h_sha256, _h_sha1, _v;
 extern int optind;
 

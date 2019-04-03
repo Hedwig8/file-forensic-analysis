@@ -8,12 +8,6 @@ int isDirectory(const char *name)
     {
         return 0;
     }
-    if (S_ISDIR(dir.st_mode)) {
-        printf("\n TRUE \n\n");
-    }
-    else {
-        printf("\n FALSE \n\n");
-    }
     return S_ISDIR(dir.st_mode);
 }
 
@@ -171,9 +165,8 @@ int dirAnalysis(const char* dirname) {
         strcat(auxFile,"/");
         strcat(auxFile,dirFile->d_name);
 
-        if(isDirectory(dirFile->d_name)) 
+        if(isDirectory(auxFile)) 
         {
-            write(STDOUT_FILENO, "is paste\n",10);
             if (_r) {
                
                 if (strstr(auxFile,".") == NULL) {
@@ -181,9 +174,6 @@ int dirAnalysis(const char* dirname) {
                     if(forkdir(auxFile)) return 1;
                 }
             }
-        }
-        else {
-            write(STDOUT_FILENO, "!is paste\n",11);
         }
         fileAnalysis(auxFile);
     }
