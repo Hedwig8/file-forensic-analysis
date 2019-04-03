@@ -3,6 +3,28 @@
 #include "forensic.h"
 
 clock_t time0;
+bool sigint = false;
+int fileNumber = 0;
+int dirNumber = 0;
+
+void sigint_handler (int signo) {
+    int cenas = signo;
+    cenas = cenas+ cenas;
+    printf("\n\naconteceu\n\n");
+    sigint = true;
+}
+
+void siguser1_handler (int signo) {
+    int cenas = signo;
+    cenas = cenas + cenas;
+    fileNumber++;
+}
+
+void siguser2_handler (int signo) {
+    int cenas = signo;
+    cenas = cenas + cenas;
+    dirNumber++;
+}
 
 int isDirectory(const char *name)
 {
@@ -42,6 +64,7 @@ int forkPipeExec(char outputStr[], const char *cmd, const char *filename)
         close(pipeFd[WRITE]);
         // catch child's output
         read(pipeFd[READ], readStr, sizeof readStr);
+        close(pipeFd[READ]);
     }
     //if child
     else if (pid == 0)
@@ -175,7 +198,7 @@ int dirAnalysis(const char *dirname)
     DIR *dir = opendir(dirname);
     struct dirent *dirFile;
 
-    while ((dirFile = readdir(dir)) != NULL)
+    while ((dirFile = readdir(dir)) != NULL && !sigint)
     {
         char auxFile[150];
 

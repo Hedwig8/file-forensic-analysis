@@ -11,6 +11,12 @@
 
 extern clock_t time0;
 
+void sigint_handler (int signo);
+
+void siguser1_handler (int signo);
+
+void siguser2_handler (int signo);
+
 int isDirectory(const char *name);
 
 void timeConverter(time_t sec, char str[]);
