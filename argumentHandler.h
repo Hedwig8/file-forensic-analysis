@@ -10,9 +10,10 @@
 #ifndef _ARGUMENTHANDLER_H_
 #define _ARGUMENTHANDLER_H_
 
-extern bool _r, _h_md5, _h_sha256, _h_sha1, _v;
+extern bool _r, _h_md5, _h_sha256, _h_sha1, _v, _o;
 extern int optind;
 extern int logFd;
+extern char* outputFile;
 
 void closeFile();
 

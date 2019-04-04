@@ -2,7 +2,8 @@
 #include "argumentHandler.h"
 #include "forensic.h"
 
-clock_t time0;
+//clock_t time0;
+struct timespec time0;
 bool sigint = false;
 int fileNumber = 0;
 int dirNumber = 0;
@@ -36,7 +37,24 @@ int isDirectory(const char *name)
     return S_ISDIR(dir.st_mode);
 }
 
-void timeConverter(time_t sec, char str[])
+void execTimeConverter(char str[]) {
+    struct timespec time1;
+    clock_gettime(CLOCK_REALTIME, &time1);
+
+    long msec = (time1.tv_nsec - time0.tv_nsec) /1000000;
+    long sec;
+    if(msec < 0) {
+        sec = time1.tv_sec - time0.tv_sec -1;
+        msec += 1000;
+        msec %= 1000;
+    } 
+    else sec = time1.tv_sec - time0.tv_sec;
+        
+
+    sprintf(str, "%ld.%03ld", sec, msec);
+}
+
+void realTimeConverter(time_t sec, char str[])
 {
     struct tm time;
     localtime_r(&sec, &time);
@@ -133,12 +151,12 @@ int fileAnalysis(const char *filename)
     write(STDOUT_FILENO, ",", 1);
 
     //file created time
-    timeConverter(file_stat.st_mtime, timeStr);
+    realTimeConverter(file_stat.st_mtime, timeStr);
     write(STDOUT_FILENO, timeStr, sizeof timeStr);
     write(STDOUT_FILENO, ",", 1);
 
     //file modification time
-    timeConverter(file_stat.st_atime, timeStr);
+    realTimeConverter(file_stat.st_atime, timeStr);
     write(STDOUT_FILENO, timeStr, sizeof timeStr);
 
     // digital impressions
@@ -242,12 +260,14 @@ int dirAnalysis(const char *dirname)
 void reportLog(const char *report)
 {
     // time calculation
-    clock_t time = clock();
-    int time_taken = ((double)time - time0) / CLOCKS_PER_SEC * 1000;
-    char logtime[6], strpid[6];
+    //clock_t time1;
+    //while((time1= clock()) == -1)  {}
+    //int time_taken = ((double)time1 - time0) / CLOCKS_PER_SEC * 1000;
+    char logtime[10], strpid[6];
 
     // cast from double to c-str
-    sprintf(logtime, "%d", time_taken);
+    //sprintf(logtime, "%d", time_taken);
+    execTimeConverter(logtime);
 
     // write time in file
     write(logFd, logtime, strlen(logtime));

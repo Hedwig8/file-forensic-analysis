@@ -1,4 +1,5 @@
 #include <time.h>
+#include <sys/time.h>
 #include <stdlib.h>
 #include "argumentHandler.h"
 #include "forensic.h"
@@ -37,10 +38,31 @@ int signalsInstall(){
 
 }
 
+void finalMessages() {
+
+    if(_o) {
+        write(STDERR_FILENO, "Data saved on file ", 19);
+        write(STDERR_FILENO, outputFile, strlen(outputFile));
+    } 
+
+    if(_v) {
+        write(STDERR_FILENO, "\nExecution records saved on file ", 33);
+        write(STDERR_FILENO, getenv("LOGFILENAME"), strlen(getenv("LOGFILENAME")));
+    }
+
+    char strExecTime[10], strFinalOutput[40];
+    execTimeConverter(strExecTime);
+    strcpy(strFinalOutput, "\n");
+    strcat(strFinalOutput, "The program took ");
+    strcat(strFinalOutput, strExecTime);
+    strcat(strFinalOutput, " s to execute.\n\n");
+    write(STDERR_FILENO, strFinalOutput, strlen(strFinalOutput));
+
+}
+
 int main(int argc, char *argv[])
 {
-    time0 = clock();
-    //time(&time0);
+    while((clock_gettime(CLOCK_REALTIME, &time0)) == -1 ) {}
 
     if(signalsInstall()) exit(1);
 
@@ -58,22 +80,7 @@ int main(int argc, char *argv[])
         if(fileAnalysis(name)) return 1;
     }
 
-    //clock_t time1 = clock();
-    //clock_t time1;
-    //time0 = clock() - time0;
-    //time(&time1);
-    //char strTimeMessage[50], strtime[10];
-    //double total_time = ((double) time1-time0) / CLOCKS_PER_SEC;
-    //double total_time = difftime(time1, time0);
-    //sprintf(strtime,"%d", total_time);
-
-    //strcpy(strTimeMessage, "\nThe execution took ");
-    //strcat(strTimeMessage, strtime);
-    //strcat(strTimeMessage, " ms to execute\n\n");
-
-
-    //write(STDERR_FILENO, strTimeMessage, strlen(strTimeMessage));
-    //printf("%f", (double) time0/CLOCKS_PER_SEC);
+    finalMessages();
 
     return 0;
 }

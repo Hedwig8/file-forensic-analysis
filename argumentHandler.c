@@ -1,11 +1,12 @@
 #include "argumentHandler.h"
 
 // argument options
-bool _r = false, _h_md5 = false, _h_sha256 = false, _h_sha1 = false, _v = false;
+bool _r = false, _h_md5 = false, _h_sha256 = false, _h_sha1 = false, _v = false, _o =false;
 
 //output file descritor
 int fd;
 int logFd;
+char *outputFile;
 
 // getopt function possible arguments
 extern char *optarg;
@@ -70,6 +71,8 @@ int argumentHandler(int argc, char *argv[]) {
                     write(STDERR_FILENO, "\nThe output file doesn't exist\n\n", 32);
                     return 1;
                 }
+                _o = true;
+                outputFile = optarg;
                 dup2(fd, STDOUT_FILENO);
                 atexit(closeFileFd);
 				break;

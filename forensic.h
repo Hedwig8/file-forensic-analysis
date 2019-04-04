@@ -9,7 +9,8 @@
 #define READ 0
 #define WRITE 1
 
-extern clock_t time0;
+//extern clock_t time0;
+struct timespec time0;
 
 void sigint_handler (int signo);
 
@@ -19,7 +20,9 @@ void siguser2_handler (int signo);
 
 int isDirectory(const char *name);
 
-void timeConverter(time_t sec, char str[]);
+void execTimeConverter(char str[]);
+
+void realTimeConverter(time_t sec, char str[]);
 
 int forkPipeExec(char outputStr[], const char *cmd, const char *filename);
 
