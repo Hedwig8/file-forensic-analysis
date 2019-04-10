@@ -10,17 +10,10 @@ A C program that analyze the content of a given file/dir
  4. And then run the program itself!
     * forensic [-r] [-h [md5[,sha1[,sha256]]] [-o <outfile>] [-v] <file|dir>
     * Options:
-      - r: recursive execution, the program analyses the content of subfolders
-      - h: hash codes
-           the program calculates the checksums of the files
-           receives as argument the wanted algorithms, separated by comma 
-      - o: stores data in file
-           the program stores the content of the analysis 
-           in a file passed as argument
-      - v: execution log report
-           the program writes some important actions of the execution into a file
-           the file used is obtained by the program in the environment variable LOGFILENAME
-           NOTE: this feature was not largely developed and extended to its maximum potential
+      - r: recursive execution as the program analyses the content of subfolders
+      - h: the program calculates the checksums of the files, receives as argument the wanted algorithm comma-separated 
+      - o: stores data of the analysis in a file passed as argument
+      - v: some important actions of the execution are written in a file, the file used is obtained by the program in the environment variable LOGFILENAME. NOTE: this feature was not largely developed and extended to its maximum potential
 
 ## Motivation
 
