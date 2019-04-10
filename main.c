@@ -1,8 +1,10 @@
 #include <time.h>
 #include <sys/time.h>
 #include <stdlib.h>
+
 #include "argumentHandler.h"
 #include "forensic.h"
+#include "utils.h"
 
 int signalsInstall(){
 
@@ -44,31 +46,6 @@ int signalsInstall(){
 
 }
 
-void finalMessages() {
-
-    char dirFileNumMessage[73];
-    sprintf(dirFileNumMessage, "\r\nExecution finished and a total of %d/%d directories/files were analized", dirNumber, fileNumber);
-    write(STDERR_FILENO, dirFileNumMessage, strlen(dirFileNumMessage));
-
-    if(_o) {
-        write(STDERR_FILENO, "\nData saved on file ", 20);
-        write(STDERR_FILENO, outputFile, strlen(outputFile));
-    } 
-
-    if(_v) {
-        write(STDERR_FILENO, "\nExecution records saved on file ", 33);
-        write(STDERR_FILENO, getenv("LOGFILENAME"), strlen(getenv("LOGFILENAME")));
-    }
-
-    char strExecTime[10], strFinalOutput[40];
-    execTimeConverter(strExecTime);
-    strcpy(strFinalOutput, "\n");
-    strcat(strFinalOutput, "The program took ");
-    strcat(strFinalOutput, strExecTime);
-    strcat(strFinalOutput, " s to execute.\n\n");
-    write(STDERR_FILENO, strFinalOutput, strlen(strFinalOutput));
-
-}
 
 int main(int argc, char *argv[])
 {

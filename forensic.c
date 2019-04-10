@@ -1,13 +1,6 @@
-#include <time.h>
-#include <errno.h>
-#include "argumentHandler.h"
 #include "forensic.h"
 
-//clock_t time0;
-struct timespec time0;
 bool sigint = false;
-int fileNumber = 0;
-int dirNumber = 0;
 
 void sigint_handler(int signo)
 {
@@ -27,41 +20,6 @@ void siguser2_handler(int signo)
     dirNumber = dirNumber + 1;
 }
 
-int isDirectory(const char *name)
-{
-    struct stat dir;
-    if (lstat(name, &dir))
-    {
-        return 0;
-    }
-    return S_ISDIR(dir.st_mode);
-}
-
-void execTimeConverter(char str[])
-{
-    struct timespec time1;
-    clock_gettime(CLOCK_REALTIME, &time1);
-
-    long msec = (time1.tv_nsec - time0.tv_nsec) / 1000000;
-    long sec;
-    if (msec < 0)
-    {
-        sec = time1.tv_sec - time0.tv_sec - 1;
-        msec += 1000;
-        msec %= 1000;
-    }
-    else
-        sec = time1.tv_sec - time0.tv_sec;
-
-    sprintf(str, "%ld.%03ld", sec, msec);
-}
-
-void realTimeConverter(time_t sec, char str[])
-{
-    struct tm time;
-    localtime_r(&sec, &time);
-    strftime(str, sizeof("dd-mm-yyyyThh:mm:ss"), "%FT%H:%M:%S", &time);
-}
 
 int forkPipeExec(char outputStr[], const char *cmd, const char *filename)
 {
@@ -80,6 +38,7 @@ int forkPipeExec(char outputStr[], const char *cmd, const char *filename)
     //if parent
     if (pid > 0)
     {
+        // check of error so a received signal dont break the wait()
         while (wait(NULL))
         {
             if (errno == EINTR)
@@ -87,6 +46,7 @@ int forkPipeExec(char outputStr[], const char *cmd, const char *filename)
             else
                 break;
         }
+
         close(pipeFd[WRITE]);
         // catch child's output
         read(pipeFd[READ], readStr, sizeof readStr);
@@ -238,6 +198,34 @@ int forkdir(const char *dirname)
     }
 }
 
+void reportLog(const char *report)
+{
+    // time calculation
+    //clock_t time1;
+    //while((time1= clock()) == -1)  {}
+    //int time_taken = ((double)time1 - time0) / CLOCKS_PER_SEC * 1000;
+    char logtime[10], strpid[6];
+
+    // cast from double to c-str
+    //sprintf(logtime, "%d", time_taken);
+    execTimeConverter(logtime);
+
+    // write time in file
+    write(logFd, logtime, strlen(logtime));
+    write(logFd, " - ", 3);
+
+    //  cast pid to c-str
+    sprintf(strpid, "%d", getpid());
+
+    // write pid in file
+    write(logFd, strpid, strlen(strpid));
+    write(logFd, " - ", 3);
+
+    // write report in file
+    write(logFd, report, strlen(report));
+    write(logFd, "\n", 1);
+}
+
 int dirAnalysis(const char *dirname)
 {
     DIR *dir;
@@ -307,30 +295,4 @@ int dirAnalysis(const char *dirname)
     return 0;
 }
 
-void reportLog(const char *report)
-{
-    // time calculation
-    //clock_t time1;
-    //while((time1= clock()) == -1)  {}
-    //int time_taken = ((double)time1 - time0) / CLOCKS_PER_SEC * 1000;
-    char logtime[10], strpid[6];
 
-    // cast from double to c-str
-    //sprintf(logtime, "%d", time_taken);
-    execTimeConverter(logtime);
-
-    // write time in file
-    write(logFd, logtime, strlen(logtime));
-    write(logFd, " - ", 3);
-
-    //  cast pid to c-str
-    sprintf(strpid, "%d", getpid());
-
-    // write pid in file
-    write(logFd, strpid, strlen(strpid));
-    write(logFd, " - ", 3);
-
-    // write report in file
-    write(logFd, report, strlen(report));
-    write(logFd, "\n", 1);
-}
