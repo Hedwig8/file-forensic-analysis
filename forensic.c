@@ -1,4 +1,5 @@
 #include <time.h>
+#include <errno.h>
 #include "argumentHandler.h"
 #include "forensic.h"
 
@@ -8,23 +9,22 @@ bool sigint = false;
 int fileNumber = 0;
 int dirNumber = 0;
 
-void sigint_handler (int signo) {
-    int cenas = signo;
-    cenas = cenas+ cenas;
-    //printf("\n\nYou clicked on CTRL+C\n\n");
+void sigint_handler(int signo)
+{
+    signo++;
     sigint = true;
 }
 
-void siguser1_handler (int signo) {
-    int cenas = signo;
-    cenas = cenas + cenas;
-    fileNumber++;
+void siguser1_handler(int signo)
+{
+    signo++;
+    fileNumber = fileNumber + 1;
 }
 
-void siguser2_handler (int signo) {
-    int cenas = signo;
-    cenas = cenas + cenas;
-    dirNumber++;
+void siguser2_handler(int signo)
+{
+    signo++;
+    dirNumber = dirNumber + 1;
 }
 
 int isDirectory(const char *name)
@@ -37,19 +37,21 @@ int isDirectory(const char *name)
     return S_ISDIR(dir.st_mode);
 }
 
-void execTimeConverter(char str[]) {
+void execTimeConverter(char str[])
+{
     struct timespec time1;
     clock_gettime(CLOCK_REALTIME, &time1);
 
-    long msec = (time1.tv_nsec - time0.tv_nsec) /1000000;
+    long msec = (time1.tv_nsec - time0.tv_nsec) / 1000000;
     long sec;
-    if(msec < 0) {
-        sec = time1.tv_sec - time0.tv_sec -1;
+    if (msec < 0)
+    {
+        sec = time1.tv_sec - time0.tv_sec - 1;
         msec += 1000;
         msec %= 1000;
-    } 
-    else sec = time1.tv_sec - time0.tv_sec;
-        
+    }
+    else
+        sec = time1.tv_sec - time0.tv_sec;
 
     sprintf(str, "%ld.%03ld", sec, msec);
 }
@@ -78,7 +80,13 @@ int forkPipeExec(char outputStr[], const char *cmd, const char *filename)
     //if parent
     if (pid > 0)
     {
-        wait(NULL);
+        while (wait(NULL))
+        {
+            if (errno == EINTR)
+                continue;
+            else
+                break;
+        }
         close(pipeFd[WRITE]);
         // catch child's output
         read(pipeFd[READ], readStr, sizeof readStr);
@@ -121,6 +129,14 @@ int fileAnalysis(const char *filename)
     char sizeStr[11];
     char timeStr[19];
     char execStr[255];
+
+    //protect this code from signals
+    sigset_t newmask, oldmask;
+    sigemptyset(&newmask);
+    sigaddset(&newmask, SIGUSR1);
+    sigaddset(&newmask, SIGUSR2);
+    sigaddset(&newmask, SIGINT);
+    sigprocmask(SIG_BLOCK, &newmask, &oldmask);
 
     struct stat file_stat;
     if (lstat(filename, &file_stat) == -1)
@@ -187,6 +203,11 @@ int fileAnalysis(const char *filename)
 
     write(STDOUT_FILENO, "\n", 1);
 
+    // sends SIGUSR1 signal to group pid
+    killpg(getpgid(getpid()), SIGUSR1);
+
+    sigprocmask(SIG_SETMASK, &oldmask, NULL);
+
     return 0;
 }
 
@@ -196,7 +217,13 @@ int forkdir(const char *dirname)
 
     if (pid > 0)
     {
-        wait(NULL);
+        while (wait(NULL))
+        {
+            if (errno == EINTR)
+                continue;
+            else
+                break;
+        }
         return 0;
     }
     else if (pid == 0)
@@ -213,12 +240,23 @@ int forkdir(const char *dirname)
 
 int dirAnalysis(const char *dirname)
 {
-    DIR *dir = opendir(dirname);
+    DIR *dir;
+    if ((dir = opendir(dirname)) == NULL)
+    {
+        perror("opendir");
+        return 1;
+    }
     struct dirent *dirFile;
 
-    while ((dirFile = readdir(dir)) != NULL && !sigint)
+    // sends SIGUSR2 signal
+    killpg(getpgid(getpid()), SIGUSR2);
+
+    while ((dirFile = readdir(dir)) != NULL)
     {
-        char auxFile[150];
+        //write(STDERR_FILENO, "1\n", 3);
+        char auxFile[510];
+
+        //write(STDERR_FILENO, "1.5\n", 5);
 
         char *strpoint = ".", *str2point = "..";
         if (!(strcmp(dirFile->d_name, strpoint) && strcmp(dirFile->d_name, str2point)))
@@ -226,13 +264,22 @@ int dirAnalysis(const char *dirname)
             continue;
         }
 
-        //if(isDirectory(dirFile->d_name) && strstr(dirFile->d_name, ".") != NULL)
-        //  continue;
+        //write(STDERR_FILENO, "2\n", 3);
 
         strcpy(auxFile, dirname);
         strcat(auxFile, "/");
         strcat(auxFile, dirFile->d_name);
 
+        //write(STDERR_FILENO, "3\n", 3);
+
+        if (_o)
+        {
+            char fileDirNumMessage[60];
+            sprintf(fileDirNumMessage, "\rNew directory: %d/%d directories/files at this time.", dirNumber, fileNumber);
+            write(STDERR_FILENO, fileDirNumMessage, strlen(fileDirNumMessage));
+        }
+
+        //write(STDERR_FILENO, "4\n", 3);
         if (isDirectory(auxFile))
         {
             if (_r)
@@ -252,8 +299,11 @@ int dirAnalysis(const char *dirname)
             strcat(strreport, auxFile);
             reportLog(strreport);
         }
+
+        //write(STDERR_FILENO, "5\n", 3);
     }
 
+    closedir(dir);
     return 0;
 }
 

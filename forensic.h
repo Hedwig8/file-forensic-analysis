@@ -2,6 +2,7 @@
 #include <dirent.h>
 #include <time.h>
 #include <sys/wait.h>
+#include <signal.h>
 
 #ifndef _FORENSIC_H_
 #define _FORENSIC_H_
@@ -9,8 +10,8 @@
 #define READ 0
 #define WRITE 1
 
-//extern clock_t time0;
-struct timespec time0;
+extern int dirNumber, fileNumber;
+extern struct timespec time0;
 
 void sigint_handler (int signo);
 

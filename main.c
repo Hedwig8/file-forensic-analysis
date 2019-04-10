@@ -8,6 +8,8 @@ int signalsInstall(){
 
     struct sigaction sigint;
     sigint.sa_handler = sigint_handler;
+    sigemptyset(&sigint.sa_mask);
+    sigint.sa_flags = 0;
  
     if (sigaction(SIGINT,&sigint,NULL) < 0)
     {
@@ -15,19 +17,23 @@ int signalsInstall(){
         return 1;
     }
 
-    struct sigaction siguser1;
-    siguser1.sa_handler = siguser1_handler;
+    struct sigaction sigusr1;
+    sigusr1.sa_handler = siguser1_handler;
+    sigemptyset(&sigusr1.sa_mask);
+    sigusr1.sa_flags = 0;
  
-    if (sigaction(SIGUSR1,&siguser1,NULL) < 0)
+    if (sigaction(SIGUSR1,&sigusr1,NULL) < 0)
     {
         write(STDERR_FILENO,"Unable to install SIGUSR1 handler\n",34);
         return 1;
     }
 
-    struct sigaction siguser2;
-    siguser2.sa_handler = siguser2_handler;
+    struct sigaction sigusr2;
+    sigusr2.sa_handler = siguser2_handler;
+    sigemptyset(&sigusr2.sa_mask);
+    sigusr2.sa_flags = 0;
  
-    if (sigaction(SIGUSR2,&siguser2,NULL) < 0)
+    if (sigaction(SIGUSR2,&sigusr2,NULL) < 0)
     {
         write(STDERR_FILENO,"Unable to install SIGUSR2 handler\n",34);
         return 1;
@@ -40,8 +46,12 @@ int signalsInstall(){
 
 void finalMessages() {
 
+    char dirFileNumMessage[73];
+    sprintf(dirFileNumMessage, "\r\nExecution finished and a total of %d/%d directories/files were analized", dirNumber, fileNumber);
+    write(STDERR_FILENO, dirFileNumMessage, strlen(dirFileNumMessage));
+
     if(_o) {
-        write(STDERR_FILENO, "Data saved on file ", 19);
+        write(STDERR_FILENO, "\nData saved on file ", 20);
         write(STDERR_FILENO, outputFile, strlen(outputFile));
     } 
 

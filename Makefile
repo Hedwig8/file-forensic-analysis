@@ -18,7 +18,7 @@
 #  -Wall turns on most, but not all, compiler warnings
 #
 CC = gcc
-CFLAGS  = -g -Wall -Wextra -Werror
+CFLAGS  = -g -Wall -Wextra 
 
 # typing 'make' will invoke the first target entry in the file 
 # (in this case the default target entry)
@@ -31,7 +31,7 @@ default: forensic
 # countwords.o, counter.o, and scanner.o:
 #
 forensic:  forensic.o argumentHandler.o
-	$(CC) $(CFLAGS) -o forensic main.c forensic.c argumentHandler.c 
+	$(CC) $(CFLAGS) -g -o forensic main.c forensic.c argumentHandler.c 
 
 # To create the object file countwords.o, we need the source
 # files countwords.c, scanner.h, and counter.h:
